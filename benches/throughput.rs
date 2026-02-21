@@ -1,4 +1,4 @@
-//! Throughput benchmarks for Blaze API.
+//! Throughput benchmarks for CLI Batch Requester.
 
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 
@@ -10,7 +10,7 @@ fn benchmark_request_parsing(c: &mut Criterion) {
 
     group.bench_function("parse_request", |b| {
         b.iter(|| {
-            let _: blaze_api::ApiRequest = serde_json::from_str(sample_json).unwrap();
+            let _: cli_batch_requester::ApiRequest = serde_json::from_str(sample_json).unwrap();
         });
     });
 
@@ -18,7 +18,7 @@ fn benchmark_request_parsing(c: &mut Criterion) {
 }
 
 fn benchmark_load_balancer(c: &mut Criterion) {
-    use blaze_api::{EndpointConfig, LoadBalancer};
+    use cli_batch_requester::{EndpointConfig, LoadBalancer};
 
     let configs = vec![
         EndpointConfig {

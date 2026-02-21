@@ -1,9 +1,9 @@
-//! Blaze API CLI - High-performance batch API client.
+//! CLI Batch Requester - High-performance batch API client.
 //!
-//! Run `blaze --help` for usage information.
+//! Run `cbr --help` for usage information.
 
 use anyhow::Result;
-use blaze_api::{Args, Config, Processor};
+use cli_batch_requester::{Args, Config, Processor};
 use console::style;
 use tracing::{error, info, Level};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -119,7 +119,7 @@ fn setup_logging(args: &Args) {
     let level = if args.verbose { Level::DEBUG } else { Level::INFO };
 
     let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(format!("blaze_api={},blaze={}", level, level)));
+        .unwrap_or_else(|_| EnvFilter::new(format!("cli_batch_requester={},cbr={}", level, level)));
 
     if args.json_logs {
         tracing_subscriber::registry()
@@ -141,12 +141,16 @@ fn setup_logging(args: &Args) {
 
 fn print_banner() {
     let banner = r#"
-    ____  __                       ___    ____  ____
-   / __ )/ /___ _____  ___        /   |  / __ \/  _/
-  / __  / / __ `/_  / / _ \      / /| | / /_/ // /  
- / /_/ / / /_/ / / /_/  __/     / ___ |/ ____// /   
-/_____/_/\__,_/ /___/\___/     /_/  |_/_/   /___/   
-                                                    
+  ____ _     ___      ____        _       _
+ / ___| |   |_ _|    | __ )  __ _| |_ ___| |__
+| |   | |    | |     |  _ \ / _` | __/ __| '_ \
+| |___| |___ | |     | |_) | (_| | || (__| | | |
+ \____|_____|___|    |____/ \__,_|\__\___|_| |_|
+ |  _ \ ___ __ _ _   _  ___ ___| |_ ___ _ __
+ | |_) / _ / _` | | | |/ _ / __| __/ _ \ '__|
+ |  _ <  __/ (_| | |_| |  __\__ \ ||  __/ |
+ |_| \_\___|\__, |\__,_|\___|___/\__\___|_|
+               |_|
     "#;
 
     println!("{}", style(banner).cyan().bold());
@@ -156,7 +160,7 @@ fn print_banner() {
     );
     println!(
         "    {}",
-        style(format!("v{}", blaze_api::VERSION)).white().dim()
+        style(format!("v{}", cli_batch_requester::VERSION)).white().dim()
     );
     println!();
 }

@@ -1,12 +1,12 @@
 high-throughput batch API client for LLM workloads. load-balances across endpoints, retries with backoff, streams results to disk. written in Rust.
 
 ```
-blaze -i requests.jsonl -o results.jsonl
+cbr -i requests.jsonl -o results.jsonl
 ```
 
 that's it. 100k requests, zero babysitting.
 
-[![crates.io](https://img.shields.io/crates/v/blaze-api.svg?style=flat-square)](https://crates.io/crates/blaze-api)
+[![crates.io](https://img.shields.io/crates/v/cli-batch-requester.svg?style=flat-square)](https://crates.io/crates/cli-batch-requester)
 [![rust](https://img.shields.io/badge/rust-1.75+-93450a.svg?style=flat-square)](https://www.rust-lang.org/)
 [![license](https://img.shields.io/badge/license-MIT-grey.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
@@ -24,20 +24,14 @@ that's it. 100k requests, zero babysitting.
 ## install
 
 ```bash
-cargo install blaze-api
+cargo install cli-batch-requester
 ```
 
 or build from source:
 
 ```bash
-git clone https://github.com/yigitkonur/blaze-api.git
-cd blaze-api && cargo build --release
-```
-
-also available via Homebrew on macOS:
-
-```bash
-brew install yigitkonur/tap/blaze
+git clone https://github.com/yigitkonur/cli-batch-requester.git
+cd cli-batch-requester && cargo build --release
 ```
 
 ## usage
@@ -45,25 +39,25 @@ brew install yigitkonur/tap/blaze
 ### basic
 
 ```bash
-blaze -i requests.jsonl -o results.jsonl
+cbr -i requests.jsonl -o results.jsonl
 
 # crank it up
-blaze -i data.jsonl -o out.jsonl --rate 10000 --workers 200
+cbr -i data.jsonl -o out.jsonl --rate 10000 --workers 200
 ```
 
 ### with multiple endpoints
 
 ```bash
-blaze -i requests.jsonl -o results.jsonl --config endpoints.json
+cbr -i requests.jsonl -o results.jsonl --config endpoints.json
 ```
 
 ### via environment
 
 ```bash
-export BLAZE_ENDPOINT_URL="https://api.openai.com/v1/completions"
-export BLAZE_API_KEY="sk-..."
-export BLAZE_MODEL="gpt-4"
-blaze -i requests.jsonl -o results.jsonl
+export CBR_ENDPOINT_URL="https://api.openai.com/v1/completions"
+export CBR_API_KEY="sk-..."
+export CBR_MODEL="gpt-4"
+cbr -i requests.jsonl -o results.jsonl
 ```
 
 ### input format
@@ -115,7 +109,7 @@ OPTIONS:
         --dry-run             validate without processing
 ```
 
-all flags also work as env vars with `BLAZE_` prefix.
+all flags also work as env vars with `CBR_` prefix.
 
 ### endpoint config
 
@@ -156,7 +150,7 @@ for multiple endpoints with weighted distribution:
 ## library usage
 
 ```rust
-use blaze_api::{Config, EndpointConfig, Processor};
+use cli_batch_requester::{Config, EndpointConfig, Processor};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

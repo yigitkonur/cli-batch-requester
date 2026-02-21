@@ -1,8 +1,8 @@
-//! # Blaze API
+//! # CLI Batch Requester
 //!
 //! High-performance async API client with load balancing for batch LLM processing.
 //!
-//! Blaze API is designed to handle massive throughput (10,000+ requests per second)
+//! CLI Batch Requester is designed to handle massive throughput (10,000+ requests per second)
 //! with intelligent load balancing, automatic retries, and comprehensive error handling.
 //!
 //! ## Features
@@ -16,7 +16,7 @@
 //! ## Quick Start
 //!
 //! ```rust,no_run
-//! use blaze_api::{Config, Processor, EndpointConfig};
+//! use cli_batch_requester::{Config, Processor, EndpointConfig};
 //!
 //! #[tokio::main]
 //! async fn main() -> anyhow::Result<()> {
@@ -46,9 +46,9 @@
 //!
 //! ## Configuration
 //!
-//! Blaze supports configuration via:
+//! CLI Batch Requester supports configuration via:
 //! - Command-line arguments
-//! - Environment variables (prefixed with `BLAZE_`)
+//! - Environment variables (prefixed with `CBR_`)
 //! - JSON configuration files
 //!
 //! See [`Config`] for all available options.
@@ -69,7 +69,7 @@ pub mod tracker;
 // Re-exports for convenience
 pub use config::{Args, Config, EndpointConfig, RequestConfig, RetryConfig};
 pub use endpoint::{Endpoint, LoadBalancer};
-pub use error::{BlazeError, Result};
+pub use error::{CbrError, Result};
 pub use processor::{ProcessingResult, Processor};
 pub use request::{ApiRequest, ApiResponse, ErrorResponse, RequestResult};
 pub use tracker::{StatsSnapshot, StatsTracker};

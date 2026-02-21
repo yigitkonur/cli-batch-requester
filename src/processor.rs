@@ -6,7 +6,7 @@
 use crate::client::ApiClient;
 use crate::config::Config;
 use crate::endpoint::LoadBalancer;
-use crate::error::{BlazeError, Result};
+use crate::error::{CbrError, Result};
 use crate::request::{ApiRequest, RequestResult};
 use crate::tracker::StatsTracker;
 use futures::stream::{self, StreamExt};
@@ -62,7 +62,7 @@ impl Processor {
 
         // Setup output files
         let output_writer = if let Some(path) = &output_path {
-            let file = File::create(path).await.map_err(|e| BlazeError::OutputFileWrite {
+            let file = File::create(path).await.map_err(|e| CbrError::OutputFileWrite {
                 path: path.clone(),
                 source: e,
             })?;
@@ -71,7 +71,7 @@ impl Processor {
             None
         };
 
-        let error_file = File::create(&error_path).await.map_err(|e| BlazeError::OutputFileWrite {
+        let error_file = File::create(&error_path).await.map_err(|e| CbrError::OutputFileWrite {
             path: error_path.clone(),
             source: e,
         })?;
@@ -218,7 +218,7 @@ impl Processor {
 
     /// Read requests from a JSONL file.
     async fn read_requests(&self, path: &PathBuf) -> Result<Vec<ApiRequest>> {
-        let file = File::open(path).await.map_err(|e| BlazeError::InputFileRead {
+        let file = File::open(path).await.map_err(|e| CbrError::InputFileRead {
             path: path.clone(),
             source: e,
         })?;
@@ -228,7 +228,7 @@ impl Processor {
         let mut requests = Vec::new();
         let mut line_number = 0;
 
-        while let Some(line) = lines.next_line().await.map_err(|e| BlazeError::InputFileRead {
+        while let Some(line) = lines.next_line().await.map_err(|e| CbrError::InputFileRead {
             path: path.clone(),
             source: e,
         })? {
@@ -241,7 +241,7 @@ impl Processor {
             }
 
             let mut request: ApiRequest =
-                serde_json::from_str(trimmed).map_err(|e| BlazeError::JsonParse {
+                serde_json::from_str(trimmed).map_err(|e| CbrError::JsonParse {
                     line: line_number,
                     source: e,
                 })?;

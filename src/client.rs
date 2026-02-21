@@ -5,7 +5,7 @@
 
 use crate::config::Config;
 use crate::endpoint::Endpoint;
-use crate::error::{BlazeError, Result};
+use crate::error::{CbrError, Result};
 use crate::request::{ApiRequest, ApiResponse, ErrorResponse, RequestResult, ResponseMetadata};
 use reqwest::{header, Client};
 use std::sync::Arc;
@@ -43,7 +43,7 @@ impl ApiClient {
             .gzip(true)
             .brotli(true)
             .build()
-            .map_err(BlazeError::HttpRequest)?;
+            .map_err(CbrError::HttpRequest)?;
 
         Ok(Self {
             client,

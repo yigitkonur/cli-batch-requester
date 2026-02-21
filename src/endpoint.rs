@@ -4,7 +4,7 @@
 //! across multiple endpoints based on configurable weights.
 
 use crate::config::EndpointConfig;
-use crate::error::{BlazeError, Result};
+use crate::error::{CbrError, Result};
 use parking_lot::RwLock;
 use rand::prelude::*;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -156,7 +156,7 @@ impl LoadBalancer {
     /// Create a new load balancer from endpoint configurations.
     pub fn new(configs: Vec<EndpointConfig>) -> Result<Self> {
         if configs.is_empty() {
-            return Err(BlazeError::NoEndpoints);
+            return Err(CbrError::NoEndpoints);
         }
 
         let endpoints: Vec<Arc<Endpoint>> = configs
@@ -201,7 +201,7 @@ impl LoadBalancer {
             return Ok(self.weighted_select(&recovering));
         }
 
-        Err(BlazeError::AllEndpointsUnhealthy)
+        Err(CbrError::AllEndpointsUnhealthy)
     }
 
     /// Perform weighted random selection.

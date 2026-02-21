@@ -1,4 +1,4 @@
-//! Custom error types for Blaze API.
+//! Custom error types for CLI Batch Requester.
 //!
 //! This module defines all error types used throughout the application,
 //! following Rust best practices with `thiserror` for library errors.
@@ -9,7 +9,7 @@ use thiserror::Error;
 /// Errors that can occur during API processing.
 #[derive(Error, Debug)]
 #[allow(missing_docs)]
-pub enum BlazeError {
+pub enum CbrError {
     /// Failed to read the input file.
     #[error("failed to read input file '{path}': {source}")]
     InputFileRead {
@@ -91,5 +91,5 @@ pub enum BlazeError {
     },
 }
 
-/// Result type alias for Blaze operations.
-pub type Result<T> = std::result::Result<T, BlazeError>;
+/// Result type alias for CLI Batch Requester operations.
+pub type Result<T> = std::result::Result<T, CbrError>;

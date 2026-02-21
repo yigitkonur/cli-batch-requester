@@ -1,73 +1,73 @@
-//! Configuration management for Blaze API.
+//! Configuration management for CLI Batch Requester.
 //!
 //! Supports configuration via CLI arguments, environment variables,
 //! and configuration files with sensible defaults.
 
-use crate::error::{BlazeError, Result};
+use crate::error::{CbrError, Result};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::num::NonZeroU32;
 use std::path::PathBuf;
 use std::time::Duration;
 
-/// CLI arguments for the Blaze API client.
+/// CLI arguments for the CLI Batch Requester client.
 #[derive(Parser, Debug, Clone)]
 #[command(
-    name = "blaze",
+    name = "cbr",
     author = "Yiğit Konur <yigit@wope.com>",
     version,
-    about = "🔥 High-performance async API client with load balancing",
-    long_about = "Blaze API is a blazing-fast API client designed for batch LLM processing.\n\n\
+    about = "High-performance async API client with load balancing",
+    long_about = "CLI Batch Requester is a high-performance API client designed for batch LLM processing.\n\n\
                   It supports weighted load balancing, automatic retries with exponential backoff,\n\
                   and can handle 10,000+ requests per second on modest hardware.",
     after_help = "EXAMPLES:\n    \
-        blaze --input requests.jsonl --output results.jsonl\n    \
-        blaze -i data.jsonl -o out.jsonl --rate 5000 --workers 100\n    \
-        blaze --config endpoints.json --input batch.jsonl"
+        cbr --input requests.jsonl --output results.jsonl\n    \
+        cbr -i data.jsonl -o out.jsonl --rate 5000 --workers 100\n    \
+        cbr --config endpoints.json --input batch.jsonl"
 )]
 pub struct Args {
     /// Path to the JSONL file containing requests
-    #[arg(short, long, env = "BLAZE_INPUT")]
+    #[arg(short, long, env = "CBR_INPUT")]
     pub input: PathBuf,
 
     /// Path to save successful responses (optional)
-    #[arg(short, long, env = "BLAZE_OUTPUT")]
+    #[arg(short, long, env = "CBR_OUTPUT")]
     pub output: Option<PathBuf>,
 
     /// Path to save error responses
-    #[arg(short, long, default_value = "errors.jsonl", env = "BLAZE_ERRORS")]
+    #[arg(short, long, default_value = "errors.jsonl", env = "CBR_ERRORS")]
     pub errors: PathBuf,
 
     /// Maximum requests per second
-    #[arg(short, long, default_value = "1000", env = "BLAZE_RATE")]
+    #[arg(short, long, default_value = "1000", env = "CBR_RATE")]
     pub rate: u32,
 
     /// Maximum retry attempts per request
-    #[arg(short = 'a', long, default_value = "3", env = "BLAZE_MAX_ATTEMPTS")]
+    #[arg(short = 'a', long, default_value = "3", env = "CBR_MAX_ATTEMPTS")]
     pub max_attempts: u32,
 
     /// Number of concurrent workers
-    #[arg(short, long, default_value = "50", env = "BLAZE_WORKERS")]
+    #[arg(short, long, default_value = "50", env = "CBR_WORKERS")]
     pub workers: usize,
 
     /// Request timeout in seconds
-    #[arg(short, long, default_value = "30", env = "BLAZE_TIMEOUT")]
+    #[arg(short, long, default_value = "30", env = "CBR_TIMEOUT")]
     pub timeout: u64,
 
     /// Path to endpoint configuration file (JSON)
-    #[arg(short, long, env = "BLAZE_CONFIG")]
+    #[arg(short, long, env = "CBR_CONFIG")]
     pub config: Option<PathBuf>,
 
     /// Enable verbose logging
-    #[arg(short, long, env = "BLAZE_VERBOSE")]
+    #[arg(short, long, env = "CBR_VERBOSE")]
     pub verbose: bool,
 
     /// Output logs as JSON
-    #[arg(long, env = "BLAZE_JSON_LOGS")]
+    #[arg(long, env = "CBR_JSON_LOGS")]
     pub json_logs: bool,
 
     /// Disable progress bar
-    #[arg(long, env = "BLAZE_NO_PROGRESS")]
+    #[arg(long, env = "CBR_NO_PROGRESS")]
     pub no_progress: bool,
 
     /// Dry run - validate config without sending requests
@@ -216,12 +216,12 @@ fn default_multiplier() -> f64 {
 impl Config {
     /// Load configuration from a file.
     pub fn from_file(path: &PathBuf) -> Result<Self> {
-        let content = std::fs::read_to_string(path).map_err(|e| BlazeError::InputFileRead {
+        let content = std::fs::read_to_string(path).map_err(|e| CbrError::InputFileRead {
             path: path.clone(),
             source: e,
         })?;
 
-        serde_json::from_str(&content).map_err(|e| BlazeError::JsonParse { line: 0, source: e })
+        serde_json::from_str(&content).map_err(|e| CbrError::JsonParse { line: 0, source: e })
     }
 
     /// Create configuration from CLI arguments.
@@ -237,11 +237,11 @@ impl Config {
         } else {
             // Use default endpoint from environment or error
             let endpoint = EndpointConfig {
-                url: std::env::var("BLAZE_ENDPOINT_URL")
+                url: std::env::var("CBR_ENDPOINT_URL")
                     .unwrap_or_else(|_| "http://localhost:8080/v1/completions".to_string()),
                 weight: 1,
-                api_key: std::env::var("BLAZE_API_KEY").ok(),
-                model: std::env::var("BLAZE_MODEL").ok(),
+                api_key: std::env::var("CBR_API_KEY").ok(),
+                model: std::env::var("CBR_MODEL").ok(),
                 max_concurrent: 100,
             };
 
@@ -266,24 +266,24 @@ impl Config {
     /// Validate the configuration.
     pub fn validate(&self) -> Result<()> {
         if self.endpoints.is_empty() {
-            return Err(BlazeError::NoEndpoints);
+            return Err(CbrError::NoEndpoints);
         }
 
         for endpoint in &self.endpoints {
             if endpoint.url.is_empty() {
-                return Err(BlazeError::InvalidConfig(
+                return Err(CbrError::InvalidConfig(
                     "endpoint URL cannot be empty".to_string(),
                 ));
             }
             if endpoint.weight == 0 {
-                return Err(BlazeError::InvalidConfig(
+                return Err(CbrError::InvalidConfig(
                     "endpoint weight must be greater than 0".to_string(),
                 ));
             }
         }
 
         if self.request.workers == 0 {
-            return Err(BlazeError::InvalidConfig(
+            return Err(CbrError::InvalidConfig(
                 "workers must be greater than 0".to_string(),
             ));
         }
